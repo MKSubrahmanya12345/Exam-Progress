@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Manager</title>
+    <style>
+        /* Copy the styles from your previously saved progress tracker HTML */
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1 id="subject-title">Progress Manager</h1>
+        <div id="aggregate-progress">Total Progress: 0%</div>
+    </div>
+
+    <button onclick="addCategory()">Add New Category</button>
+    <div id="categories"></div>
+
+    <div id="deleted-section">
+        <h2>Deleted Progress Bars</h2>
+        <div id="deleted-bars"></div>
+    </div>
+
+    <script>
+        const categoriesContainer = document.getElementById('categories');
+        const deletedBarsContainer = document.getElementById('deleted-bars');
+        const aggregateProgress = document.getElementById('aggregate-progress');
+
+        // Get the subject name from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const subject = urlParams.get('subject') || 'General';
+        document.getElementById('subject-title').textContent = `${subject} Progress Manager`;
+
+        // Load or initialize data for the specific subject
+        let categories = JSON.parse(localStorage.getItem(`${subject}_categories`)) || [];
+        let deletedBars = JSON.parse(localStorage.getItem(`${subject}_deletedBars`)) || [];
+
+        function saveData() {
+            localStorage.setItem(`${subject}_categories`, JSON.stringify(categories));
+            localStorage.setItem(`${subject}_deletedBars`, JSON.stringify(deletedBars));
+        }
+
+        // Copy the rest of the script.js functionality from your previously saved code
+        // Be sure to update `saveData` and `loadData` to use the `${subject}_` prefix for storage keys
+    </script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maths Progress</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #30da05, #00a6f3);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin: 20px;
+            color: #e0e0e0;
+            text-align: center;
+        }
+
+        button {
+            background: linear-gradient(90deg, #ff0000, #0400ff);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #5c6bc0;
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            background-color: #1e1e2f;
+            padding: 10px;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .category {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin: 20px 0;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .category h2 {
+            color: #d4d4d4;
+            margin: 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+        }
+
+        .subcategories {
+            margin-top: 10px;
+        }
+
+        .progress-bar-container {
+            background-color: #000b0cec;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-bar-wrapper {
+            background-color: #000000;
+            height: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #00ff00, #00ff0d);
+            height: 100%;
+            text-align: center;
+            color: white;
+            font-size: 0.9em;
+            line-height: 25px;
+        }
+
+        #deleted-section, #deleted-categories-section {
+            margin-top: 40px;
+        }
+
+        #deleted-bars, #deleted-categories {
+            margin-top: 10px;
+        }
+
+        #deleted-bars .progress-bar-container,
+        #deleted-categories .category {
+            background: #2e2e3e;
+            border: 1px solid #3949ab;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Maths Progress</h1>
+        <div id="aggregate-progress">Total Progress: 0%</div>
+    </div>
+
+    <button onclick="addCategory()">Add New Category</button>
+    <div id="categories"></div>
+
+    <div id="deleted-section">
+        <h2>Deleted Progress Bars</h2>
+        <div id="deleted-bars"></div>
+    </div>
+
+    <div id="deleted-categories-section">
+        <h2>Deleted Categories</h2>
+        <div id="deleted-categories"></div>
+    </div>
+
+    <script>
+        const categoriesContainer = document.getElementById('categories');
+        const deletedBarsContainer = document.getElementById('deleted-bars');
+        const deletedCategoriesContainer = document.getElementById('deleted-categories');
+        const aggregateProgress = document.getElementById('aggregate-progress');
+
+        // LocalStorage keys specific to Maths
+        let categories = JSON.parse(localStorage.getItem('Maths_categories')) || [];
+        let deletedBars = JSON.parse(localStorage.getItem('Maths_deletedBars')) || [];
+        let deletedCategories = JSON.parse(localStorage.getItem('Maths_deletedCategories')) || [];
+
+        function saveData() {
+            localStorage.setItem('Maths_categories', JSON.stringify(categories));
+            localStorage.setItem('Maths_deletedBars', JSON.stringify(deletedBars));
+            localStorage.setItem('Maths_deletedCategories', JSON.stringify(deletedCategories));
+        }
+
+        // Rendering Functions
+        function renderCategories() {
+            categoriesContainer.innerHTML = '';
+            categories.forEach((category, categoryIndex) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+
+                const progressBarsHTML = category.progressBars
+                    .map((bar, barIndex) => {
+                        const percentage = calculatePercentage(bar.pagesDone, bar.totalPages);
+                        return `
+                            <div class="progress-bar-container">
+                                <div>${bar.name}</div>
+                                <div>
+                                    <label>Pages Done: </label>
+                                    <input type="number" value="${bar.pagesDone}" 
+                                        onchange="updatePagesDone(${categoryIndex}, ${barIndex}, this.value)" />
+                                    <label>Total Pages: </label>
+                                    <input type="number" value="${bar.totalPages}" 
+                                        onchange="updateTotalPages(${categoryIndex}, ${barIndex}, this.value)" />
+                                </div>
+                                <div class="progress-bar-wrapper">
+                                    <div class="progress-bar" style="width: ${percentage}%">${percentage}%</div>
+                                </div>
+                                <button onclick="deleteProgressBar(${categoryIndex}, ${barIndex})">Delete</button>
+                            </div>
+                        `;
+                    })
+                    .join('');
+
+                categoryDiv.innerHTML = `
+                    <h2>${category.name}</h2>
+                    <div class="subcategories">
+                        <button onclick="addProgressBar(${categoryIndex})">Add Progress Bar</button>
+                        ${progressBarsHTML}
+                        <button onclick="deleteCategory(${categoryIndex})">Delete Category</button>
+                    </div>
+                `;
+
+                categoriesContainer.appendChild(categoryDiv);
+            });
+
+            updateAggregateProgress();
+        }
+
+        function renderDeletedCategories() {
+            deletedCategoriesContainer.innerHTML = '';
+            deletedCategories.forEach((category, index) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.innerHTML = `
+                    <h2>${category.name}</h2>
+                    <button onclick="restoreDeletedCategory(${index})">Undo</button>
+                    <button onclick="permanentlyDeleteCategory(${index})">Permanently Delete</button>
+                `;
+                deletedCategoriesContainer.appendChild(categoryDiv);
+            });
+        }
+
+        function renderDeletedBars() {
+            deletedBarsContainer.innerHTML = '';
+            deletedBars.forEach((deletedBar, index) => {
+                const barDiv = document.createElement('div');
+                barDiv.className = 'progress-bar-container';
+                barDiv.innerHTML = `
+                    <div>${deletedBar.name}</div>
+                    <button onclick="restoreDeletedBar(${index})">Undo</button>
+                    <button onclick="permanentlyDeleteBar(${index})">Permanently Delete</button>
+                `;
+                deletedBarsContainer.appendChild(barDiv);
+            });
+        }
+
+        // Actions for Categories and Bars
+        function addCategory() {
+            const name = prompt('Enter category name:');
+            if (name) {
+                categories.push({ name, progressBars: [] });
+                saveData();
+                renderCategories();
+            }
+        }
+
+        function deleteCategory(index) {
+            const deletedCategory = categories.splice(index, 1)[0];
+            deletedCategories.push(deletedCategory);
+            saveData();
+            renderCategories();
+            renderDeletedCategories();
+        }
+
+        function restoreDeletedCategory(index) {
+            const category = deletedCategories.splice(index, 1)[0];
+            categories.push(category);
+            saveData();
+            renderCategories();
+            renderDeletedCategories();
+        }
+
+        function permanentlyDeleteCategory(index) {
+            deletedCategories.splice(index, 1);
+            saveData();
+            renderDeletedCategories();
+        }
+
+        // Add, Update, and Delete Progress Bars (existing logic)
+        function addProgressBar(categoryIndex) {
+            const name = prompt('Enter progress bar name:');
+            if (name) {
+                categories[categoryIndex].progressBars.push({ name, pagesDone: 0, totalPages: 1 });
+                saveData();
+                renderCategories();
+            }
+        }
+
+        function updatePagesDone(categoryIndex, barIndex, value) {
+            categories[categoryIndex].progressBars[barIndex].pagesDone = Math.max(0, parseInt(value, 10) || 0);
+            saveData();
+            renderCategories();
+        }
+
+        function updateTotalPages(categoryIndex, barIndex, value) {
+            const newTotal = Math.max(1, parseInt(value, 10) || 1);
+            categories[categoryIndex].progressBars[barIndex].totalPages = newTotal;
+            saveData();
+            renderCategories();
+        }
+
+        function deleteProgressBar(categoryIndex, barIndex) {
+            const deletedBar = categories[categoryIndex].progressBars.splice(barIndex, 1)[0];
+            deletedBars.push({ ...deletedBar, categoryIndex });
+            saveData();
+            renderCategories();
+            renderDeletedBars();
+        }
+
+        function restoreDeletedBar(index) {
+            const bar = deletedBars.splice(index, 1)[0];
+            categories[bar.categoryIndex].progressBars.push(bar);
+            saveData();
+            renderCategories();
+            renderDeletedBars();
+        }
+
+        function permanentlyDeleteBar(index) {
+            deletedBars.splice(index, 1);
+            saveData();
+            renderDeletedBars();
+        }
+
+        // Helper Functions
+        function calculatePercentage(done, total) {
+            return Math.min(100, Math.round((done / total) * 100));
+        }
+
+        function updateAggregateProgress() {
+            let totalBars = 0;
+            let totalProgress = 0;
+
+            categories.forEach((category) => {
+                category.progressBars.forEach((bar) => {
+                    totalBars++;
+                    totalProgress += calculatePercentage(bar.pagesDone, bar.totalPages);
+                });
+            });
+
+            const avgProgress = totalBars > 0 ? Math.round(totalProgress / totalBars) : 0;
+            aggregateProgress.textContent = `Total Progress: ${avgProgress}%`;
+        }
+
+        // Initial Render
+        renderCategories();
+        renderDeletedBars();
+        renderDeletedCategories();
+    </script>
+</body>
+</html>

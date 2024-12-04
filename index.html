@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subject Dashboard</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(180deg, #74d6fd, #ffffff);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        h1 {
+            font-family: 'San Francisco', sans-serif;
+            color: #000000;
+            margin-bottom: 20px;
+        }
+        .subject-card {
+            background: linear-gradient(180deg, #000000, #473333,#000000);
+            border: 1px double #270802;
+            padding: 60px;
+            margin: 10px;
+            border-radius:5px;
+            cursor: crosshair;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .subject-card:hover {
+            transform: scale(1.25);
+            box-shadow: 0 8px 1600px rgba(0, 0, 0, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <h1>Subject Dashboard</h1>
+    <div id="subjects">
+        <div class="subject-card" onclick="window.location.href='progress1.html'">Maths</div>
+        <div class="subject-card" onclick="window.location.href='progress2.html'">Physics</div>
+        <div class="subject-card" onclick="window.location.href='progress3.html'">BE</div>
+        <div class="subject-card" onclick="window.location.href='progress4.html'">PSP</div>
+        <div class="subject-card" onclick="window.location.href='progress5.html'">FCS</div>
+        <div class="subject-card" onclick="window.location.href='progress6.html'">Eng</div>
+    </div>
+</body>
+</html>
